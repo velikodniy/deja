@@ -1,0 +1,81 @@
+name: Release macOS
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build universal macOS binaries
+    runs-on: macos-15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Test native backend
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+
+      - name: Build universal app and disk image
+        run: npm run tauri -- build --target universal-apple-darwin --bundles app,dmg --no-sign -- --locked
+
+      - name: Verify architectures and package app
+        run: |
+          app=src-tauri/target/universal-apple-darwin/release/bundle/macos/Deja.app
+          lipo -verify_arch arm64 x86_64 "$app/Contents/MacOS/deja"
+          mkdir release
+          ditto -c -k --sequesterRsrc --keepParent "$app" release/Deja_universal.app.zip
+          cp src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg release/
+
+      - name: Upload macOS binaries
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: macos-universal
+          path: release/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download macOS binaries
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: macos-universal
+          path: release
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" release/* \
+            --verify-tag \
+            --title "Deja $TAG" \
+            --generate-notes \
+            --notes "Universal macOS binaries for Apple Silicon and Intel. These builds are unsigned and not notarized."
