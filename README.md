@@ -44,3 +44,7 @@ This builds the frontend and Rust backend in release mode, then creates
 `src-tauri/target/release/bundle/macos/Deja.app`.
 
 To check and build only the frontend, run `npm run build`.
+
+## License
+
+[MIT](LICENSE) © 2026 Vadim Velicodnii.
