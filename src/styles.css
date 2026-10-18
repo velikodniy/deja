@@ -1,0 +1,372 @@
+/* ── Tokens ──────────────────────────────────────────────────────────────── */
+
+:root {
+  --chrome: #f4f4f6;
+  --chrome-edge: rgba(0, 0, 0, 0.1);
+  --stage: #e4e4e9;
+  --fg: #1b1b1f;
+  --fg-muted: #6a6a76;
+  --surface: rgba(0, 0, 0, 0.055);
+  --surface-hover: rgba(0, 0, 0, 0.085);
+  --surface-active: rgba(0, 0, 0, 0.125);
+  --accent: #4f46e5;
+  --accent-fg: #fff;
+  --sheet-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 8px 28px rgba(0, 0, 0, 0.18);
+  --radius: 7px;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --chrome: #232327;
+    --chrome-edge: rgba(255, 255, 255, 0.09);
+    --stage: #151517;
+    --fg: #ececf0;
+    --fg-muted: #9596a2;
+    --surface: rgba(255, 255, 255, 0.07);
+    --surface-hover: rgba(255, 255, 255, 0.11);
+    --surface-active: rgba(255, 255, 255, 0.16);
+    --accent: #7c78f5;
+    --accent-fg: #12121a;
+    --sheet-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 32px rgba(0, 0, 0, 0.55);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  color: var(--fg);
+  background: var(--stage);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  /* A document viewer is a pointer surface, not a text surface. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sprite { display: none; }
+
+.icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 0 1fr;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 46px;
+  padding: 0 10px;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--chrome-edge);
+}
+
+/* The overlay title bar floats macOS's window buttons over the toolbar, so the
+   left edge has to keep clear of them. `trafficLightPosition` in tauri.conf.json
+   centres the native buttons on this toolbar; keep it in sync with the height. */
+#app[data-platform="macos"] .toolbar { padding-left: 78px; }
+
+.toolbar__side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
+.toolbar__side--end { justify-content: flex-end; }
+
+.toolbar__title {
+  flex: 0 1 auto;
+  margin: 0;
+  max-width: 42%;
+  font-size: 13px;
+  font-weight: 590;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  pointer-events: none;
+}
+
+#app[data-state="empty"] .doc-only { display: none; }
+
+/* ── Controls ────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: default;
+  transition: background-color 0.1s ease;
+}
+
+.btn:hover:not(:disabled) { background: var(--surface-hover); }
+.btn:active:not(:disabled) { background: var(--surface-active); }
+
+.btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.btn--text {
+  min-width: 52px;
+  font-size: 12px;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.btn--primary {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 550;
+}
+
+.btn--primary:hover:not(:disabled),
+.btn--primary:active:not(:disabled) {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+
+.btn[aria-pressed="true"] {
+  background: var(--surface-active);
+  color: var(--accent);
+}
+
+/* A segmented cluster sitting on its own recessed surface. */
+.group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.pager {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  padding: 0 4px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.pager__input {
+  width: 3ch;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  font-weight: 550;
+  text-align: right;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.pager__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pager__total {
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+/* ── Loading bar ─────────────────────────────────────────────────────────── */
+
+.loading {
+  position: relative;
+  height: 0;
+  overflow: visible;
+  z-index: 3;
+}
+
+.loading[data-busy="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: sweep 1.1s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from { background-position: -45% 0; }
+  to { background-position: 145% 0; }
+}
+
+/* ── Stage ───────────────────────────────────────────────────────────────── */
+
+.stage {
+  display: flex;
+  overflow: auto;
+  background: var(--stage);
+  outline: none;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+}
+
+/* `width: fit-content` with `min-width: 100%` centres the pages while still
+   letting a zoomed-in page scroll fully left and right — plain `align-items:
+   center` would clip the overflowing start edge. */
+.doc {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  width: fit-content;
+  min-width: 100%;
+  margin: auto;
+}
+
+#app[data-state="empty"] .doc { display: none; }
+
+/* Sized by the page view; blank until its image arrives, so the scrollbar is
+   honest from the moment the document opens. */
+.sheet {
+  flex: none;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: var(--sheet-shadow);
+  line-height: 0;
+}
+
+.sheet img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The backend never renders above native resolution, so deep zoom upscales
+     here; smooth beats blocky for scanned type. */
+  image-rendering: auto;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+#app[data-state="ready"] .empty { display: none; }
+
+.empty__icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.42;
+}
+
+.empty__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 590;
+  color: var(--fg);
+}
+
+.empty__hint { margin: 0 0 10px; }
+
+.empty__hint code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+/* ── Drop target & errors ────────────────────────────────────────────────── */
+
+.drop-veil {
+  position: fixed;
+  inset: 46px 0 0;
+  display: none;
+  place-items: center;
+  background: color-mix(in srgb, var(--stage) 80%, transparent);
+  backdrop-filter: blur(2px);
+  z-index: 4;
+}
+
+#app[data-dropping="true"] .drop-veil { display: grid; }
+
+.drop-veil span {
+  padding: 14px 22px;
+  border: 2px dashed var(--accent);
+  border-radius: 12px;
+  color: var(--fg);
+  font-weight: 590;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100vw - 40px));
+  padding: 9px 14px;
+  border-radius: 9px;
+  background: #b3261e;
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+.toast[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::after { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deja</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <svg class="sprite" aria-hidden="true">
+      <symbol id="i-open" viewBox="0 0 16 16">
+        <path d="M1.75 12.25V3.75a1 1 0 0 1 1-1h3.1a1 1 0 0 1 .7.3l1.2 1.2h4.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-9.5a1 1 0 0 1-1-1Z" />
+      </symbol>
+      <symbol id="i-prev" viewBox="0 0 16 16"><path d="M9.75 3.5 5.25 8l4.5 4.5" /></symbol>
+      <symbol id="i-next" viewBox="0 0 16 16"><path d="M6.25 3.5 10.75 8l-4.5 4.5" /></symbol>
+      <symbol id="i-minus" viewBox="0 0 16 16"><path d="M3.75 8h8.5" /></symbol>
+      <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3.75v8.5M3.75 8h8.5" /></symbol>
+      <symbol id="i-fit-width" viewBox="0 0 16 16">
+        <path d="M1.75 3.25v9.5M14.25 3.25v9.5M4.25 8h7.5M6.25 5.75 4 8l2.25 2.25M9.75 5.75 12 8l-2.25 2.25" />
+      </symbol>
+      <symbol id="i-fit-page" viewBox="0 0 16 16">
+        <path d="M2.25 2.75h11.5v10.5H2.25z" /><path d="M5.75 5.5h4.5v5h-4.5z" />
+      </symbol>
+      <symbol id="i-doc" viewBox="0 0 48 48">
+        <path d="M11 5.5h17L37 15v27.5H11z" /><path d="M27.5 5.5V15H37" />
+        <path d="M17 24h14M17 30h14M17 36h9" />
+      </symbol>
+    </svg>
+
+    <div id="app" data-state="empty">
+      <header class="toolbar" data-tauri-drag-region>
+        <div class="toolbar__side">
+          <button id="open" class="btn" title="Open a document (⌘O)" aria-label="Open a document">
+            <svg class="icon"><use href="#i-open" /></svg>
+          </button>
+          <div class="group doc-only">
+            <button id="prev" class="btn" title="Previous page (←)" aria-label="Previous page">
+              <svg class="icon"><use href="#i-prev" /></svg>
+            </button>
+            <div class="pager">
+              <input id="page-input" class="pager__input" type="text" inputmode="numeric"
+                     autocomplete="off" spellcheck="false" aria-label="Page number" />
+              <span class="pager__total">/&nbsp;<span id="page-count">0</span></span>
+            </div>
+            <button id="next" class="btn" title="Next page (→)" aria-label="Next page">
+              <svg class="icon"><use href="#i-next" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <h1 class="toolbar__title" id="doc-name"></h1>
+
+        <div class="toolbar__side toolbar__side--end doc-only">
+          <div class="group">
+            <button id="zoom-out" class="btn" title="Zoom out (⌘−)" aria-label="Zoom out">
+              <svg class="icon"><use href="#i-minus" /></svg>
+            </button>
+            <button id="zoom-level" class="btn btn--text" title="Actual size (⌘0)">100%</button>
+            <button id="zoom-in" class="btn" title="Zoom in (⌘+)" aria-label="Zoom in">
+              <svg class="icon"><use href="#i-plus" /></svg>
+            </button>
+          </div>
+          <div class="group">
+            <button id="fit-width" class="btn" title="Fit width (⌘1)" aria-label="Fit width">
+              <svg class="icon"><use href="#i-fit-width" /></svg>
+            </button>
+            <button id="fit-page" class="btn" title="Fit page (⌘2)" aria-label="Fit page">
+              <svg class="icon"><use href="#i-fit-page" /></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="loading" id="loading" aria-hidden="true"></div>
+
+      <main class="stage" id="stage" tabindex="-1">
+        <div class="empty" id="empty">
+          <svg class="empty__icon"><use href="#i-doc" /></svg>
+          <p class="empty__title">No document open</p>
+          <p class="empty__hint">Drop a <code>.djvu</code> file here, or</p>
+          <button id="open-empty" class="btn btn--primary">Choose a file…</button>
+        </div>
+        <div class="doc" id="doc"></div>
+      </main>
+
+      <div class="drop-veil" id="drop-veil" aria-hidden="true"><span>Drop to open</span></div>
+      <div class="toast" id="toast" role="alert" hidden></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
