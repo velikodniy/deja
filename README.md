@@ -73,8 +73,8 @@ git push origin v0.1.0
 ```
 
 The workflow can also be run manually from GitHub Actions to verify a build
-without publishing a release. Download those binaries from the run's
-`macos-universal` artifact.
+without publishing a release, even when targeting an existing tag. Download those
+binaries from the run's `macos-universal` artifact.
 
 Signing and notarization are not configured; the workflow does not require Apple
 developer credentials.
