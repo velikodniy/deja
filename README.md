@@ -78,7 +78,3 @@ binaries from the run's `macos-universal` artifact.
 
 Signing and notarization are not configured; the workflow does not require Apple
 developer credentials.
-
-## License
-
-[MIT](LICENSE) © 2026 Vadim Velicodnii.
